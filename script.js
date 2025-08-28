@@ -13,11 +13,13 @@ async function fetchIP() {
     const data = await res.json();
     ipEl.textContent = data.ip || '无法获取';
 
-    // 更新日志显示
+    // 添加新的日志记录到前端显示
     if (data.url) {
       appendLog(`${new Date().toLocaleString()} - ${username} - ${data.ip}`);
-      fetchLogs(); // 读取最新日志列表
     }
+
+    // 同步后台存储的日志列表（不清空已有显示）
+    fetchLogs();
   } catch (err) {
     ipEl.textContent = '加载失败';
     console.error(err);
@@ -28,18 +30,23 @@ function appendLog(line) {
   const li = document.createElement('li');
   li.textContent = line;
   logList.prepend(li);
-  if (logList.childNodes.length > 50) logList.removeChild(logList.lastChild);
+
+  // 保留最新 200 条记录
+  while (logList.childNodes.length > 200) {
+    logList.removeChild(logList.lastChild);
+  }
 }
 
 async function fetchLogs() {
   try {
-    // 这里示例用 Vercel Blob SDK 获取所有 blobs
-    // 你需要在后端提供一个 endpoint 返回所有 log URL 或内容
     const res = await fetch('/api/getLogs');
     const logs = await res.json(); // 假设返回数组：[{ timestamp, username, ip }]
-    logList.innerHTML = '';
-    logs.reverse().forEach(l => {
-      appendLog(`${new Date(l.timestamp).toLocaleString()} - ${l.username} - ${l.ip}`);
+    logs.forEach(l => {
+      // 防止重复显示：检查是否已经显示
+      const text = `${new Date(l.timestamp).toLocaleString()} - ${l.username} - ${l.ip}`;
+      if (![...logList.childNodes].some(li => li.textContent === text)) {
+        appendLog(text);
+      }
     });
   } catch (err) {
     console.error('获取日志失败', err);
@@ -58,4 +65,5 @@ copyBtn.addEventListener('click', () => {
 });
 
 // 初次加载
+fetchLogs();
 fetchIP();
