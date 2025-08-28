@@ -28,5 +28,4 @@ copyBtn.addEventListener('click', () => {
   }
 });
 
-// 初次加载
 fetchIP();
