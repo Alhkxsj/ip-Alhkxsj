@@ -1,62 +1,53 @@
-import fetch from "node-fetch";
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-  const ip =
-    req.query.ip ||
-    req.headers["x-forwarded-for"] ||
-    req.socket.remoteAddress;
-  const now = new Date().toISOString();
-
-  const logLine = `[${now}] ${ip}\n`;
-
-  // 生成日志文件名，例如 logs/2025-08-28.log
-  const date = now.split("T")[0];
-  const filePath = `logs/${date}.log`;
-
-  // 从环境变量里读取你的 GitHub 仓库信息
-  const repo = process.env.GITHUB_REPO; // 格式：username/repo
-  const token = process.env.GITHUB_TOKEN; // GitHub Personal Access Token
-
   try {
-    // 先读取文件内容
-    const getUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-    let sha = null;
-    let content = "";
+    const username = req.query.username || '匿名';
+    
+    // 获取公网 IP（使用代理/VPN时为代理 IP）
+    const ip = req.headers['x-forwarded-for'] || req.headers['cf-connecting-ip'] || req.socket.remoteAddress;
 
-    const getRes = await fetch(getUrl, {
-      headers: { Authorization: `token ${token}` },
+    const date = new Date().toISOString().slice(0,10);
+    const filename = `logs/${date}.log`;
+    const logLine = `[${new Date().toISOString()}] ${username} - ${ip}\n`;
+
+    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+    const GITHUB_REPO = process.env.GITHUB_REPO;
+
+    // 获取现有日志内容
+    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${filename}`, {
+      headers: {
+        Authorization: `token ${GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json'
+      }
     });
 
-    if (getRes.ok) {
+    let sha = null;
+    let content = '';
+    if (getRes.status === 200) {
       const data = await getRes.json();
       sha = data.sha;
-      content = Buffer.from(data.content, "base64").toString("utf8");
+      content = Buffer.from(data.content, 'base64').toString();
     }
 
-    // 拼接新的内容
-    content += logLine;
+    const newContent = content + logLine;
 
-    // 提交回 GitHub
-    const putRes = await fetch(getUrl, {
-      method: "PUT",
+    await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${filename}`, {
+      method: 'PUT',
       headers: {
-        Authorization: `token ${token}`,
-        "Content-Type": "application/json",
+        Authorization: `token ${GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json'
       },
       body: JSON.stringify({
-        message: `日志更新 ${date}`,
-        content: Buffer.from(content).toString("base64"),
-        sha: sha || undefined,
-      }),
+        message: `[IP Logger] 添加访问日志`,
+        content: Buffer.from(newContent).toString('base64'),
+        sha: sha || undefined
+      })
     });
 
-    if (!putRes.ok) {
-      throw new Error("GitHub API 写入失败");
-    }
-
-    res.status(200).json({ message: "日志已记录", ip, time: now });
+    res.status(200).json({ ip });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "日志写入失败", details: err.message });
+    res.status(500).json({ ip: null });
   }
 }
