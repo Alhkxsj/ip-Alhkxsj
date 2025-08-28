@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>我的公网IP</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align:center; padding:50px; background:#f9f9f9; }
+    h1 { font-size: 2em; color: #333; }
+    #ip { font-size: 1.5em; color: #0066cc; margin-top:20px; }
+  </style>
+</head>
+<body>
+  <h1>你的公网 IP 是：</h1>
+  <p id="ip">获取中...</p>
+
+  <script>
+    // 获取公网 IP
+    fetch("https://api.ipify.org?format=json")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("ip").textContent = data.ip;
+        // 调用后端，记录日志
+        fetch("/api/log?ip=" + data.ip);
+      })
+      .catch(() => {
+        document.getElementById("ip").textContent = "获取失败";
+      });
+  </script>
+</body>
+</html>
