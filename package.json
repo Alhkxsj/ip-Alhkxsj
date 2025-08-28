@@ -2,6 +2,7 @@
   "name": "ip-logger",
   "version": "1.0.0",
   "dependencies": {
+    "@vercel/blob": "^1.1.1",
     "node-fetch": "^2.6.7"
   }
 }
