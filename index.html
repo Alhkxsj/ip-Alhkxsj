@@ -4,23 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IP记录器</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>欢迎访问</h1>
-    <div class="card">
-      <p>用户名: <span id="username">匿名</span></p>
-      <p>公网 IP: <span id="ip">加载中...</span></p>
+  <header>
+    <h1>IP记录器</h1>
+    <p class="subtitle">仅供娱乐，使用 VPN/代理时显示代理 IP</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="field">
+        <label>用户名</label>
+        <span id="username">匿名</span>
+      </div>
+      <div class="field">
+        <label>公网 IP</label>
+        <span id="ip">加载中...</span>
+      </div>
       <div class="buttons">
         <button id="refreshBtn">刷新</button>
         <button id="copyBtn">复制 IP</button>
       </div>
-      <p class="note">仅供娱乐，本网站无法显示使用 VPN 或代理的真实公网 IP</p>
       <p class="author">作者: 快手啊泠好困想睡觉</p>
-    </div>
-  </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>本网站仅供娱乐</p>
+  </footer>
+
   <script src="script.js"></script>
 </body>
 </html>
