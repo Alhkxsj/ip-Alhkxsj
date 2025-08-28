@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   try {
     const username = req.query.username || '匿名';
     
-    // 获取公网 IP（使用代理/VPN时为代理 IP）
+    // 记录公网 IP（使用 VPN/代理时为代理 IP）
     const ip = req.headers['x-forwarded-for'] || req.headers['cf-connecting-ip'] || req.socket.remoteAddress;
 
     const date = new Date().toISOString().slice(0,10);
